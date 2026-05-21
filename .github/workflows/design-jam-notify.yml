@@ -1,0 +1,32 @@
+name: Design Jam Agenda Notification
+
+on:
+  schedule:
+    # Tuesday 09:00 CEST (UTC+2, summer). Change to '0 8 * * 2' in winter (CET/UTC+1).
+    - cron: '0 7 * * 2'
+    # Friday 09:00 CEST (UTC+2, summer). Change to '0 8 * * 5' in winter (CET/UTC+1).
+    - cron: '0 7 * * 5'
+  workflow_dispatch:
+    inputs:
+      day:
+        description: 'Day to post for (Tuesday or Friday). Defaults to today.'
+        required: false
+        default: ''
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Post Design Jam agenda to Slack
+        env:
+          CONFLUENCE_EMAIL: ${{ secrets.CONFLUENCE_EMAIL }}
+          CONFLUENCE_TOKEN: ${{ secrets.CONFLUENCE_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          JAM_DAY: ${{ github.event.inputs.day }}
+        run: python scripts/design-jam-notify.py
